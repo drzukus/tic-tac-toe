@@ -9,10 +9,10 @@ const Player = (sign) => {
 
 
 const gameBoard = (() => {
-    const board = new Array(9).fill("X");
+    const board = new Array(9).fill("");
 
-    const setCell = (index, symbol) => {
-        board[index] = symbol;
+    const setCell = (index, sign) => {
+        board[index] = sign;
     };
 
     const getBoard = () => {
@@ -40,9 +40,11 @@ const displayController = (() => {
 
     cells.forEach((cell) => {
         cell.addEventListener("click", (e) => {
-            renderBoard()
-        })
-    })
+            if (e.target.textContent) return;
+            gameController.play(e.target.dataset.index);
+            renderBoard();
+        });
+    });
 
 })();
 
@@ -50,6 +52,38 @@ const displayController = (() => {
 const gameController = (() => {
     const player1 = Player("X");
     const player2 = Player("O");
+    const winCombinations = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6],
+      ];
 
+    let round = 0;
 
+    const play = (index) => {
+        const curSign = getCurSign();
+        console.log(checkWin())
+        gameBoard.setCell(index, curSign);
+
+        round++
+    };
+
+    const checkWin = () => {
+        return winCombinations.some((combination) => {
+            combination.every((index) => {
+                gameBoard.getBoard()[index] === getCurSign();
+            });
+        });
+    };
+
+    const getCurSign = () => {
+        return round % 2 === 0 ? player1.getSign() : player2.getSign();
+    };
+
+    return {play};
 })();
