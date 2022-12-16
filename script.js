@@ -31,6 +31,8 @@ const gameBoard = (() => {
 
 const displayController = (() => {
     const cells = document.querySelectorAll(".cell");
+    const winMsg = document.querySelector(".win-msg");
+    const restartBtn = document.querySelector(".restart-btn");
 
     const renderBoard = () => {
         for (let i = 0; i < cells.length; i++) {
@@ -46,6 +48,22 @@ const displayController = (() => {
         });
     });
 
+    const displayWin = (sign) => {
+        winMsg.textContent = `Congratulations! ${sign == "X" ? "Player 1" : "Player 2"} is the winner!`
+    };
+
+    const displayTie = () => {
+        winMsg.textContent = "It's a tie!";
+    };
+
+    restartBtn.addEventListener("click", () => {
+        gameBoard.reset();
+        renderBoard();
+        winMsg.textContent = "";
+        gameController.playReset();
+    });
+
+    return {displayWin, displayTie}
 })();
 
 
@@ -64,26 +82,44 @@ const gameController = (() => {
       ];
 
     let round = 0;
+    let over = false;
 
     const play = (index) => {
-        const curSign = getCurSign();
-        console.log(checkWin())
-        gameBoard.setCell(index, curSign);
+        if (over) return
+
+        gameBoard.setCell(index, getCurSign());
+
+        if (checkWin()) {
+            over = true;
+            displayController.displayWin(getCurSign());
+            return;
+        };
 
         round++
+
+        if (round == 9) {
+            over = true;
+            displayController.displayTie();
+            return;
+        };
     };
 
     const checkWin = () => {
-        return winCombinations.some((combination) => {
-            combination.every((index) => {
-                gameBoard.getBoard()[index] === getCurSign();
-            });
-        });
+        return winCombinations.some((combination) => 
+            combination.every((index) => 
+                gameBoard.getBoard()[index] === getCurSign()
+            )
+        );
     };
 
     const getCurSign = () => {
         return round % 2 === 0 ? player1.getSign() : player2.getSign();
     };
 
-    return {play};
+    const playReset = () => {
+        over = false;
+        round = 0;
+    };
+
+    return {play, playReset};
 })();
